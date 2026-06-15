@@ -105,12 +105,7 @@ export function afficherPageConnexion() {
         </p>
 
         <!-- Aide test -->
-        <div class="mt-6 p-3 bg-beige rounded-lg border border-gray-100">
-          <p class="text-xs text-muted font-semibold uppercase tracking-wider mb-2">Comptes de test</p>
-          <p class="text-xs text-muted">Client : client@decoflow.com / client123</p>
-          <p class="text-xs text-muted">Admin : admin@decoflow.com / admin123</p>
-          <p class="text-xs text-muted">Superadmin : super@decoflow.com / super123</p>
-        </div>
+    
 
       </div>
 

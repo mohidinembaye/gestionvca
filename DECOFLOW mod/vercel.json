@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "DECOFLOW mod/index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/DECOFLOW mod/index.html"
+      "source": "/api/(.*)",
+      "destination": "/api/server.js"
     }
   ]
 }

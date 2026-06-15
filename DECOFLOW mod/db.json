@@ -20,21 +20,25 @@
     },
     {
       "id": "3",
-      "nom": "Moussa Ndiaye",
-      "email": "super@decoflow.com",
+      "nom": "Mohidine Mbaye",
+      "email": "mohidineb@decoflow.com",
       "motDePasse": "super123",
-      "entreprise": "DecoFlow",
+      "entreprise": "maze",
       "role": "superadmin",
-      "dateInscription": "2023-12-01T08:00:00.000Z"
-    },
-    {
-      "nom": "mohidine mbaye",
-      "entreprise": "odc",
-      "email": "mo@gmail.com",
-      "motDePasse": "azerty21",
-      "role": "client",
-      "dateInscription": "2026-06-14T13:05:52.557Z",
-      "id": "_c99-CRDg-Q"
+      "dateInscription": "2023-12-01T08:00:00.000Z",
+      "biographie": "",
+      "telephone": "",
+      "preferences": {
+        "langue": "fr",
+        "densite": "normal",
+        "notifications": {
+          "commandes": true,
+          "devis": true,
+          "hebdo": false,
+          "stock": true,
+          "users": false
+        }
+      }
     }
   ],
   "produits": [],

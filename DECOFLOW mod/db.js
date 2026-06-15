@@ -1,6 +1,11 @@
 // ─── Configuration ────────────────────────────────────────────────────────────
 
-const API_URL    = 'http://localhost:3000/utilisateurs';
+// Détection de l'environnement pour cibler la bonne API (Vercel ou Local)
+const BASE_API_URL = typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
+  ? `${window.location.origin}/api`
+  : 'http://localhost:3000';
+
+const API_URL     = `${BASE_API_URL}/utilisateurs`;
 const CLE_SESSION = 'decoflow_session';
 
 // ─── Utilisateurs ─────────────────────────────────────────────────────────────
@@ -14,7 +19,7 @@ export async function trouverUtilisateurParEmail(email) {
     const utilisateurs = await reponse.json();
     return utilisateurs.length > 0 ? utilisateurs[0] : null;
   } catch (erreur) {
-    console.error('Erreur db.js (trouverUtilisateur) :', erreur);
+    console.error('Erreur db.js (trouverUtilisateurParEmail) :', erreur);
     return null;
   }
 }
@@ -33,9 +38,9 @@ export async function recupererTousLesUtilisateurs() {
 export async function ajouterUtilisateur(nouvelUtilisateur) {
   try {
     const reponse = await fetch(API_URL, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nouvelUtilisateur)
+      body:    JSON.stringify(nouvelUtilisateur)
     });
     if (!reponse.ok) throw new Error("Erreur lors de l'enregistrement");
     return await reponse.json();
@@ -45,19 +50,23 @@ export async function ajouterUtilisateur(nouvelUtilisateur) {
   }
 }
 
-export async function modifierRoleUtilisateur(id, nouveauRole) {
+export async function modifierUtilisateur(id, donnees) {
   try {
     const reponse = await fetch(`${API_URL}/${id}`, {
-      method: 'PATCH',
+      method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: nouveauRole })
+      body:    JSON.stringify(donnees)
     });
-    if (!reponse.ok) throw new Error('Erreur lors de la modification du rôle');
+    if (!reponse.ok) throw new Error('Erreur lors de la modification');
     return await reponse.json();
   } catch (erreur) {
-    console.error('Erreur db.js (modifierRoleUtilisateur) :', erreur);
+    console.error('Erreur db.js (modifierUtilisateur) :', erreur);
     throw erreur;
   }
+}
+
+export async function modifierRoleUtilisateur(id, nouveauRole) {
+  return modifierUtilisateur(id, { role: nouveauRole });
 }
 
 export async function supprimerUtilisateur(id) {
@@ -74,6 +83,8 @@ export async function supprimerUtilisateur(id) {
 // ─── Session ──────────────────────────────────────────────────────────────────
 
 export function lireSession() {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  
   var donnees = localStorage.getItem(CLE_SESSION);
   if (!donnees) return null;
   try { return JSON.parse(donnees); }
@@ -81,11 +92,15 @@ export function lireSession() {
 }
 
 export function sauvegarderSession(donneesSession) {
-  localStorage.setItem(CLE_SESSION, JSON.stringify(donneesSession));
+  if (typeof window !== 'undefined' && window.localStorage) {
+    localStorage.setItem(CLE_SESSION, JSON.stringify(donneesSession));
+  }
 }
 
 export function supprimerSession() {
-  localStorage.removeItem(CLE_SESSION);
+  if (typeof window !== 'undefined' && window.localStorage) {
+    localStorage.removeItem(CLE_SESSION);
+  }
 }
 
 export function lireRoleSession() {

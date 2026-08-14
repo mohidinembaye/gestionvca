@@ -1,0 +1,138 @@
+@startuml boutiqueAdmin
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Admin Boutique" as Admin
+
+rectangle "StoreManager Pro" {
+  rectangle "Tableau de Bord" {
+    usecase " consulter statistique" as UC1
+    usecase "Consulter Ventes Récentes" as UC2
+    usecase "Consulter Dettes du Jour" as UC3
+    usecase "Consulter Ruptures & Alertes" as UC4
+    usecase "Consulter Livraisons du jour" as UC5
+    usecase "Consulter Clients Débiteurs" as UC6
+    usecase "Consulter Solde Fournisseurs" as UC7
+
+    usecase "Consulter Ventes Comptant" as UC1_I1
+    usecase "Consulter Dettes à Récupérer" as UC1_I2
+    usecase "Consulter Volume Approvisionné" as UC1_I3
+    usecase "Consulter Valeur du Stock" as UC1_I4
+    usecase "Consulter Taux de Recouvrement" as UC1_I5
+    usecase "Consulter Panier Moyen" as UC1_I6
+
+    UC1 ..> UC1_I1 : <<include>>
+    UC1 ..> UC1_I2 : <<include>>
+    UC1 ..> UC1_I3 : <<include>>
+    UC1 ..> UC1_I4 : <<include>>
+    UC1 ..> UC1_I5 : <<include>>
+    UC1 ..> UC1_I6 : <<include>>
+
+  }
+   rectangle "Ventes / POS" {
+    usecase " consulter statistique" as UC8
+
+    usecase "Consulter CA Encaissé Net" as UC8_I1
+    usecase "Consulter Encours Client Total" as UC8_I2
+    usecase "Consulter Commandes Enregistrées" as UC8_I3
+    usecase "Consulter lignes de chaque vente" as UC8_E1
+    usecase "Consulter Registre Général des Ventes & Commandes" as UC8_I4
+
+    UC8 ..> UC8_I1 : <<include>>
+    UC8 ..> UC8_I2 : <<include>>
+    UC8 ..> UC8_I3 : <<include>>
+    UC8 ..> UC8_I4 : <<include>>
+
+    UC8_E1 ..> UC8_I4 : <<extend>>
+  }
+    rectangle "Gestion Dettes" {
+      usecase " consulter statistique" as UC9
+
+    usecase "Consulter Créances Actives" as UC9_I1
+    usecase "Consulter Clients Débiteurs" as UC9_I2
+    usecase "Consulter Total Recouvrements" as UC9_I3
+    usecase "Consulter Registre des Dettes Actives" as UC9_I4
+
+    usecase "Lister Paiements" as UC9_E1
+    usecase "Enregistrer Remboursement" as UC9_E2
+
+    UC9 ..> UC9_I1 : <<include>>
+    UC9 ..> UC9_I2 : <<include>>
+    UC9 ..> UC9_I3 : <<include>>
+    UC9 ..> UC9_I4 : <<include>>
+
+    UC9_E1 ..> UC9_I4 : <<extend>>
+    UC9_E2 ..> UC9_I4 : <<extend>>
+  }
+    rectangle "Approvisionnements" {
+      usecase " consulter statistique" as UC10
+
+    usecase "Consulter Coût Total des Entrées" as UC10_I1
+    usecase "Consulter Bons de Réception (BL)" as UC10_I2
+    usecase "Consulter Fournisseurs Actifs" as UC10_I3
+    usecase "Consulter Bordereaux de Livraison (Réceptions)" as UC10_I4
+
+    usecase "Voir Ligne" as UC10_E1
+    usecase "Confirmer Réception" as UC10_E2
+
+    UC10 ..> UC10_I1 : <<include>>
+    UC10 ..> UC10_I2 : <<include>>
+    UC10 ..> UC10_I3 : <<include>>
+
+    UC10_E1 ..> UC10_I4 : <<extend>>
+    UC10_E2 ..> UC10_I4 : <<extend>>
+  }
+   rectangle "Produits & Tiers" {
+      usecase " consulter statistique" as UC11
+
+    usecase "Consulter Valeur Totale Stock" as UC11_I1
+    usecase "Consulter Articles au Catalogue" as UC11_I2
+    usecase "Consulter Clients Enregistrés" as UC11_I3
+
+    usecase "Ajouter Produits" as UC11_E1
+    usecase "Ajouter Clients" as UC11_E2
+    usecase "Ajouter Fournisseurs" as UC11_E3
+
+    usecase "Consulter Catalogue Produits" as UC11_E1_I1
+    usecase "Filtrer par Nom (Produits)" as UC11_E1_I2
+
+    usecase "Lister Clients" as UC11_E2_I1
+    usecase "Filtrer par Nom (Clients)" as UC11_E2_I2
+
+    usecase "Consulter Catalogue Fournisseurs" as UC11_E3_I1
+    usecase "Filtrer par Nom (Fournisseurs)" as UC11_E3_I2
+
+    UC11..> UC11_I1 : <<include>>
+    UC11 ..> UC11_I2 : <<include>>
+    UC11 ..> UC11_I3 : <<include>>
+
+   
+
+    UC11_E1 ..> UC11_E1_I1 : <<include>>
+    UC11_E1 ..> UC11_E1_I2 : <<include>>
+
+    UC11_E2 ..> UC11_E2_I1 : <<include>>
+    UC11_E2 ..> UC11_E2_I2 : <<include>>
+
+    UC11_E3 ..> UC11_E3_I1 : <<include>>
+    UC11_E3 ..> UC11_E3_I2 : <<include>>
+  }
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC10_I4
+Admin --> UC11
+Admin --> UC11_E1
+Admin --> UC11_E2
+Admin --> UC11_E3
+
+@enduml

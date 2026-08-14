@@ -1,0 +1,49 @@
+@startuml Inventaire
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Inventaire" as Inv
+
+rectangle "StoreManager Pro" {
+
+  rectangle "Produits & Tiers" {
+      usecase " consulter statistique" as UC11
+
+    usecase "Consulter Valeur Totale Stock" as UC11_I1
+    usecase "Consulter Articles au Catalogue" as UC11_I2
+    usecase "Consulter Clients Enregistrés" as UC11_I3
+
+    usecase "Ajouter Produits" as UC11_E1
+    usecase "Ajouter Clients" as UC11_E2
+    usecase "Ajouter Fournisseurs" as UC11_E3
+
+    usecase "Consulter Catalogue Produits" as UC11_E1_I1
+    usecase "Filtrer par Nom (Produits)" as UC11_E1_I2
+
+    usecase "Lister Clients" as UC11_E2_I1
+    usecase "Filtrer par Nom (Clients)" as UC11_E2_I2
+
+    usecase "Consulter Catalogue Fournisseurs" as UC11_E3_I1
+    usecase "Filtrer par Nom (Fournisseurs)" as UC11_E3_I2
+
+    UC11 ..> UC11_I1 : <<include>>
+    UC11 ..> UC11_I2 : <<include>>
+    UC11 ..> UC11_I3 : <<include>>
+
+   
+
+    UC11_E1 ..> UC11_E1_I1 : <<include>>
+    UC11_E1 ..> UC11_E1_I2 : <<include>>
+
+    UC11_E2 ..> UC11_E2_I1 : <<include>>
+    UC11_E2 ..> UC11_E2_I2 : <<include>>
+
+    UC11_E3 ..> UC11_E3_I1 : <<include>>
+    UC11_E3 ..> UC11_E3_I2 : <<include>>
+  }
+
+Inv --> UC11
+Inv --> UC11_E1
+Inv --> UC11_E2
+Inv --> UC11_E3
+@enduml

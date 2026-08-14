@@ -1,0 +1,52 @@
+@startuml Chargé de Vente
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Chargé de Vente" as Vente
+
+rectangle "StoreManager Pro" {
+
+   rectangle "Ventes / POS" {
+    usecase " consulter statistique" as UC8
+
+    usecase "Consulter CA Encaissé Net" as UC8_I1
+    usecase "Consulter Encours Client Total" as UC8_I2
+    usecase "Commandes Enregistrées" as UC8_I22
+
+    usecase " Enregistrer vente" as UC8_I3
+    usecase "Consulter lignes de chaque vente" as UC8_E1
+    usecase "Consulter Registre Général des Ventes & Commandes" as UC8_I4
+
+    UC8 ..> UC8_I1 : <<include>>
+    UC8 ..> UC8_I2 : <<include>>
+    UC8_I4 ..> UC8_E1 : <<extend>>
+
+  }
+    rectangle "Gestion Dettes" {
+      usecase " consulter statistique" as UC9
+    usecase "Consulter Créances Actives" as UC9_I1
+    usecase "Consulter Clients Débiteurs" as UC9_I2
+    usecase "Consulter Total Recouvrements" as UC9_I3
+    usecase "Consulter Registre des Dettes Actives" as UC9_I4
+
+    usecase "Lister Paiements" as UC9_E1
+    usecase "Enregistrer Remboursement" as UC9_E2
+
+    UC9 ..> UC9_I1 : <<include>>
+    UC9 ..> UC9_I2 : <<include>>
+        UC8 ..> UC8_I22 : <<include>>
+
+    UC9 ..> UC9_I3 : <<include>>
+ 
+
+    UC9_E1 ..> UC9_I4 : <<extend>>
+    UC9_E2 ..> UC9_I4 : <<extend>>
+  }
+}
+
+Vente --> UC8
+Vente --> UC9
+Vente -->UC8_I3
+Vente -->UC8_I4
+Vente ->UC9_I4
+@enduml

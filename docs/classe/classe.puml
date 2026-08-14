@@ -1,0 +1,96 @@
+@startuml GESTIONVCA
+skinparam classAttributeIconSize 0
+
+class Utilisateur {
+- id : int
+- nom : string
+- email : string
+- motDePasse : string
+}
+
+class Role {
+- id : int
+- nom : string
+}
+
+class Client {
+- id : int
+- nom : string
+- prenom : string
+- telephone : string
+- limiteCredit : float
+}
+
+class Produit {
+- id : int
+- nom : string
+- prixUnitaire : float
+- stockQuantite : int
+}
+
+class Fournisseur {
+- id : int
+- nom : string
+- telephone : string
+}
+
+class Commande {
+- id : int
+- numCmde : string
+- dateCommande : date
+- dateLimite : date
+- montantTotal : float
+- montantVerse : float
+- modePaiement : string
+}
+
+class LigneCommande {
+- id : int
+- quantite : int
+- prixUnitaire : float
+}
+
+class Dette {
+- id : int
+- dateCreation : date
+- montantInitial : float
+- montantPaye : float
+}
+
+class Reglement {
+- id : int
+- date : date
+- montant : float
+}
+
+class BonLivraison {
+- id : int
+- refBL : string
+- dateReception : date
+- valeurLot : float
+- statut : string
+}
+
+class LigneBonLivraison {
+- id : int
+- quantite : int
+- prixAchat : float
+}
+
+Utilisateur "0..*" --> "1" Role
+
+Client "1" -- "0..*" Commande 
+Commande "1" *-- "1..*" LigneCommande 
+LigneCommande "0..*" --> "1..*" Produit 
+
+Client "1" -- "0..*" Dette 
+Dette "1" *-- "0..*" Reglement 
+
+Fournisseur "1" -- "0..*" BonLivraison 
+BonLivraison "1" *-- "1..*" LigneBonLivraison 
+LigneBonLivraison "0..*" --> "1..*" Produit 
+
+Utilisateur "1" -- "0..*" Commande 
+Utilisateur "1" -- "0..*" BonLivraison
+
+@enduml

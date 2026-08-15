@@ -1,7 +1,7 @@
 <?php
 
 require_once dirname(__DIR__) . '/core/Database.php';
-require_once dirname(__DIR__) . '/entity/Clients.php';
+require_once dirname(__DIR__) . '/entity/Cients.php';
 
 class ClientRepository
 

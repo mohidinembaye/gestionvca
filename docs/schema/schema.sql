@@ -81,3 +81,58 @@ CREATE TABLE lignes_bon_livraison (
   quantite INTEGER CHECK (quantite > 0),
    prix_achat NUMERIC(10,2) CHECK (prix_achat >= 0 )
    );
+
+
+INSERT INTO roles (nom) VALUES 
+('Admin'),
+('Vendeur'),
+('Gestionnaire de Stock');
+
+INSERT INTO utilisateurs (nom, email, mot_de_passe, role_id) VALUES 
+('Moussa Diop', 'moussa@gestvca.sn', 'passer123', 1),
+('Awa Ndiaye', 'awa@gestvca.sn', '123456', 2);
+
+INSERT INTO clients (nom, prenom) VALUES 
+('Sow', 'Ibrahima'),
+('Faye', 'Fatou'),
+('Ba', 'Ousmane');
+
+INSERT INTO produits (nom, prix_unitaire, stock_quantite) VALUES 
+('Sac de Riz 50kg', 18500.00, 100),
+('Bidon d''Huile 5L', 6500.00, 45),
+('Paquet de Sucre 1kg', 700.00, 200),
+('Lait en Poudre 500g', 2500.00, 30);
+
+INSERT INTO fournisseurs (nom, telephone) VALUES 
+('Grandes Minoteries', '+221338000001'),
+('Cosmeto & Food Distribution', '+221338000002');
+
+INSERT INTO commandes (num_cmde, date_commande, date_limite, montant_total, montant_verse, mode_paiement, client_id, utilisateur_id) VALUES 
+('CMD-2026-001', '2026-08-01', '2026-08-15', 31500.00, 31500.00, 'Cash', 1, 2),
+('CMD-2026-002', '2026-08-10', '2026-08-25', 25000.00, 10000.00, 'Wave', 2, 2);
+
+INSERT INTO lignes_commande (commande_id, produit_id, quantite, prix_unitaire) VALUES 
+(1, 1, 1, 18500.00),
+(1, 2, 2, 6500.00),
+(2, 1, 1, 18500.00),
+(2, 2, 1, 6500.00);
+
+INSERT INTO dettes (client_id, montant_initial, montant_restant) VALUES 
+(2, 15000.00, 10000.00);
+
+INSERT INTO reglements (dette_id, date, montant) VALUES 
+(1, '2026-08-12', 5000.00);
+
+INSERT INTO bons_livraison (ref_bl, date_reception, valeur_lot, statut, fournisseur_id, utilisateur_id) VALUES 
+('BL-2026-101', '2026-08-05', 925000.00, 'Recu', 1, 1);
+
+INSERT INTO lignes_bon_livraison (bon_livraison_id, produit_id, quantite, prix_achat) VALUES 
+(1, 1, 50, 17500.00),
+(1, 3, 50, 1000.00);
+
+SELECT id, nom, prenom FROM clients ORDER BY nom, prenom
+
+SELECT id, nom, prix_unitaire, stock_quantite
+             FROM produits
+             WHERE stock_quantite <= 5
+             ORDER BY stock_quantite ASC

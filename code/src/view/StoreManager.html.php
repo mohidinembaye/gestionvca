@@ -475,7 +475,12 @@
 
     <!-- Toast box for user notices -->
     <div class="toast-box" id="toast-box">
+        <?php if (!empty($message)): ?>
+            <div class="toast <?= htmlspecialchars($message['type']) ?>" id="main-toast">
+                <?= htmlspecialchars($message['texte']) ?>
             </div>
+        <?php endif; ?>
+    </div>
 
     <div class="app-container">
         
@@ -1156,22 +1161,22 @@
                         <span>🛒 Nouvelle Vente</span>
                         <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 4px 8px; border-radius: 6px;">Terminal POS</span>
                     </div>
-                    <form method="GET" action="#" onsubmit="event.preventDefault(); alert('Action enregistrée (mode démonstration HTML/CSS)');" action="" id="order-creation-form">
-                        <input type="hidden" name="action" value="create_order">
-                        
+                    <!-- Formulaire 1 : ajouter un article au panier (panier en session) -->
+                    <form method="POST" action="/pos" style="margin-bottom: 0;">
+                        <input type="hidden" name="action" value="add_to_cart">
+
                         <div class="form-group">
                             <label for="client_id">Client Acheteur</label>
                             <div style="position: relative;">
-                                <select name="client_id" id="client-select" class="form-control" style="width: 100%; appearance: none; padding-right: 30px;" onchange="updateClientLimitInfo()">
-                                   <?php foreach( $clients as  $client): ?>
-                                                                            <option value="6" data-limit="300000">
-                                           <?php $client['prenom']." ". $client['nom'].  " ". $client['telephone'] ?></option>
-                                            <? endforeach ?>
-                                                   
-                                                                    </select>
+                                <select name="client_id" id="client-select" class="form-control" style="width: 100%; appearance: none; padding-right: 30px;">
+                                    <?php foreach ($clients as $client): ?>
+                                        <option value="<?= $client->getId() ?>" <?= $client->getId() === $clientSelectionne ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($client->getNom() . ' ' . $client->getPrenom()) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
                                 <span style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); font-size: 12px;">▼</span>
                             </div>
-                            <span id="credit-limit-info" style="font-size:11px; color:var(--text-muted); font-weight:600; margin-top:4px; display:block;"></span>
                         </div>
 
                         <!-- Articles Dynamic add -->
@@ -1180,18 +1185,23 @@
                             <div style="display: grid; grid-template-columns: 2.2fr 0.8fr auto; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label for="pos-item-select" style="font-size: 10px;">Article</label>
-                                    <select id="pos-item-select" class="form-control" style="background-color: #0b0f1a; color: white; padding: 10px; font-size: 12px;">
-                                                                               <?php foreach( $produits as  $produit): ?>
-                                                                            <option value="6" data-limit="300000">
-                                           <?php $produit['libelle']." ". $produit['quantite'] ?></option>
-                                            <? endforeach ?>
-                                                                            </select>
+                                    <select name="produit_id" id="pos-item-select" class="form-control" style="background-color: #0b0f1a; color: white; padding: 10px; font-size: 12px;">
+                                        <?php foreach ($produits as $produit): ?>
+                                            <?php
+                                                $stock = $produit->getStockQuantite();
+                                                $pastille = $stock <= 0 ? '🔴' : ($stock <= 5 ? '🟡' : '🟢');
+                                            ?>
+                                            <option value="<?= $produit->getId() ?>" <?= $stock <= 0 ? 'disabled' : '' ?>>
+                                                <?= $pastille ?> <?= htmlspecialchars($produit->getNom()) ?> — <?= number_format($produit->getPrixUnitaire(), 0, ',', ' ') ?> F (<?= $stock ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0; position: relative;">
                                     <label for="pos-qty" style="font-size: 10px;">Qté</label>
-                                    <input type="number" id="pos-qty" class="form-control" value="1" min="1" style="padding: 10px; font-size: 12px;" onfocus="showKeypad('pos-qty')">
+                                    <input type="number" name="quantite" id="pos-qty" class="form-control" value="1" min="1" style="padding: 10px; font-size: 12px;" onfocus="showKeypad('pos-qty')">
                                 </div>
-                                <button type="button" class="btn-submit" onclick="addToCart(event)" style="height: 38px; width: 38px; font-size: 18px; display: flex; justify-content: center; align-items: center; border-radius: 8px; padding: 0; flex-shrink: 0; min-width: 38px;">+</button>
+                                <button type="submit" class="btn-submit" style="height: 38px; width: 38px; font-size: 18px; display: flex; justify-content: center; align-items: center; border-radius: 8px; padding: 0; flex-shrink: 0; min-width: 38px;">+</button>
                             </div>
 
                             <!-- Keypad for tactile inputs -->
@@ -1209,33 +1219,54 @@
                                 <button type="button" class="keypad-btn" onclick="pressKey(0)">0</button>
                                 <button type="button" class="keypad-btn" onclick="hideKeypad()" style="color: var(--success); font-size: 12px;">OK</button>
                             </div>
-
-                            <!-- Cart Items list table -->
-                            <table class="debt-table" style="font-size: 11px; margin-top: 16px;">
-                                <thead>
-                                    <tr>
-                                        <th style="padding-bottom: 8px;">Produit</th>
-                                        <th style="padding-bottom: 8px;">Qté</th>
-                                        <th style="padding-bottom: 8px;">Total</th>
-                                        <th style="padding-bottom: 8px;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cart-rows">
-                                    <tr id="empty-cart-row">
-                                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 16px 0; border-bottom: none;">Panier vide. Ajoutez des articles.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div id="hidden-cart-inputs"></div>
                         </div>
+                    </form>
+
+                    <!-- Panier : reflet exact de $_SESSION, jamais du JS -->
+                    <table class="debt-table" style="font-size: 11px; margin-top: 4px;">
+                        <thead>
+                            <tr>
+                                <th style="padding-bottom: 8px;">Produit</th>
+                                <th style="padding-bottom: 8px;">Qté</th>
+                                <th style="padding-bottom: 8px;">Total</th>
+                                <th style="padding-bottom: 8px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($panier === []): ?>
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 16px 0; border-bottom: none;">Panier vide. Ajoutez des articles.</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($panier as $ligne): ?>
+                                    <tr>
+                                        <td style="padding: 8px 0; font-weight:700;"><?= htmlspecialchars($ligne['nom']) ?></td>
+                                        <td style="padding: 8px 0;"><?= $ligne['quantite'] ?></td>
+                                        <td style="padding: 8px 0; font-weight:800; color:var(--accent);"><?= number_format($ligne['sous_total'], 0, ',', ' ') ?> F</td>
+                                        <td style="padding: 8px 0; text-align:right;">
+                                            <form method="POST" action="/pos" style="display:inline; margin:0;">
+                                                <input type="hidden" name="action" value="remove_from_cart">
+                                                <input type="hidden" name="produit_id" value="<?= $ligne['produit_id'] ?>">
+                                                <button type="submit" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px;">🗑️</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+
+                    <!-- Formulaire 2 : confirmer la vente (lit le panier en session, insère en BD) -->
+                    <form method="POST" action="/pos" id="order-confirm-form">
+                        <input type="hidden" name="action" value="create_order">
+                        <input type="hidden" name="client_id" value="<?= $clientSelectionne ?? ($clients[0]->getId() ?? '') ?>">
 
                         <!-- Digital Display Panel -->
-                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.4) 100%); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 16px; padding: 14px; text-align: center; margin-bottom: 20px; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.08);">
+                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 41, 59, 0.4) 100%); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 16px; padding: 14px; text-align: center; margin: 16px 0 20px; box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.08);">
                             <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 4px;">Montant Total Net à Payer</span>
                             <div style="font-size: 24px; font-weight: 900; color: #60a5fa; letter-spacing: -0.5px; font-family: monospace; text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);">
-                                <span id="montant_total_display_text">0</span> <span style="font-size: 14px; font-weight: 700;">FCFA</span>
+                                <?= number_format($panierTotal, 0, ',', ' ') ?> <span style="font-size: 14px; font-weight: 700;">FCFA</span>
                             </div>
-                            <input type="hidden" name="montant_total" id="montant_total_display" value="0">
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
@@ -1249,11 +1280,11 @@
                              </div>
                              <div class="form-group" style="margin-bottom: 0;">
                                  <label for="pos-montant-verse" style="font-size: 10px;">Versé (Avance)</label>
-                                 <input type="number" name="montant_verse" id="pos-montant-verse" class="form-control" value="0" min="0" style="padding: 10px; font-size: 12px;" onfocus="showKeypad('pos-montant-verse')">
+                                 <input type="number" name="montant_verse" id="pos-montant-verse" class="form-control" value="<?= (int) $panierTotal ?>" min="0" style="padding: 10px; font-size: 12px;" onfocus="showKeypad('pos-montant-verse')">
                              </div>
                         </div>
 
-                        <button type="submit" class="btn-submit btn-success" style="padding: 14px; font-weight: 800; font-size: 13px; width: 100%;">Valider la Vente (DML)</button>
+                        <button type="submit" class="btn-submit btn-success" style="padding: 14px; font-weight: 800; font-size: 13px; width: 100%;" <?= $panier === [] ? 'disabled' : '' ?>>Valider la Vente (DML)</button>
                     </form>
                 </div>
 
@@ -1271,22 +1302,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                                                            <tr>
-                                    <td style="font-weight: 700; color: var(--text-muted);">#CMD-4</td>
+                            <?php foreach ($commandes as $commande): ?>
+                                <?php
+                                    $badgeClass = match ($commande['statut']) {
+                                        'COMPTANT' => 'badge-success',
+                                        'AVANCE (Credit)' => 'badge-warning',
+                                        default => 'badge-danger',
+                                    };
+                                ?>
+                                <tr>
+                                    <td style="font-weight: 700; color: var(--text-muted);">#<?= htmlspecialchars($commande['num_cmde']) ?></td>
                                     <td style="font-weight: 700;">
-                                        Maimouna Diallo                                        <div style="font-size:11px; color:var(--text-muted); font-weight:normal;">Tél : 701122334</div>
+                                        <?= htmlspecialchars($commande['client_prenom'] . ' ' . $commande['client_nom']) ?>
                                     </td>
-                                    <td style="font-weight: 800; color: var(--accent);">15 000 F</td>
+                                    <td style="font-weight: 800; color: var(--accent);"><?= number_format((float) $commande['montant_total'], 0, ',', ' ') ?> F</td>
                                     <td>
-                                                                                                                                    <span class="badge badge-danger">CRÉDIT TOTAL</span>
-                                                                                                                        </td>
+                                        <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($commande['statut']) ?></span>
+                                    </td>
                                     <td>
-                                        <button class="btn-quick-action" onclick="toggleDetails('order-details-4')">Lignes</button>
+                                        <button class="btn-quick-action" onclick="toggleDetails('order-details-<?= $commande['id'] ?>')">Lignes</button>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td colspan="5" style="padding: 0; border: none;">
-                                        <div class="details-drawer" id="order-details-4">
+                                        <div class="details-drawer" id="order-details-<?= $commande['id'] ?>">
                                             <div style="font-weight: 700; font-size: 12px; color: var(--accent); margin-bottom: 8px;">Détails Facture :</div>
                                             <table class="debt-table" style="font-size: 11px;">
                                                 <thead>
@@ -1298,150 +1337,21 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                                                                            <tr>
-                                                            <td>Paquet de sucre 1kg</td>
-                                                            <td>10</td>
-                                                            <td>1 500 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">15 000 F</td>
+                                                    <?php foreach ($lignesParCommande[$commande['id']] as $ligne): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($ligne['produit_nom']) ?></td>
+                                                            <td><?= $ligne['quantite'] ?></td>
+                                                            <td><?= number_format((float) $ligne['prix_unitaire'], 0, ',', ' ') ?> F</td>
+                                                            <td style="font-weight: 700; color: var(--accent);"><?= number_format((float) $ligne['sous_total'], 0, ',', ' ') ?> F</td>
                                                         </tr>
-                                                                                                    </tbody>
+                                                    <?php endforeach; ?>
+                                                </tbody>
                                             </table>
                                         </div>
                                     </td>
                                 </tr>
-                                                            <tr>
-                                    <td style="font-weight: 700; color: var(--text-muted);">#CMD-3</td>
-                                    <td style="font-weight: 700;">
-                                        Moussa Sarr                                        <div style="font-size:11px; color:var(--text-muted); font-weight:normal;">Tél : 769876543</div>
-                                    </td>
-                                    <td style="font-weight: 800; color: var(--accent);">74 000 F</td>
-                                    <td>
-                                                                                                                                    <span class="badge badge-warning">AVANCE (Credit)</span>
-                                                                                                                        </td>
-                                    <td>
-                                        <button class="btn-quick-action" onclick="toggleDetails('order-details-3')">Lignes</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" style="padding: 0; border: none;">
-                                        <div class="details-drawer" id="order-details-3">
-                                            <div style="font-weight: 700; font-size: 12px; color: var(--accent); margin-bottom: 8px;">Détails Facture :</div>
-                                            <table class="debt-table" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Produit</th>
-                                                        <th>Qté</th>
-                                                        <th>P.U.</th>
-                                                        <th>Sous-total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                                                                            <tr>
-                                                            <td>Sac de riz 50kg</td>
-                                                            <td>2</td>
-                                                            <td>25 000 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">50 000 F</td>
-                                                        </tr>
-                                                                                                            <tr>
-                                                            <td>Carton de savon</td>
-                                                            <td>2</td>
-                                                            <td>12 000 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">24 000 F</td>
-                                                        </tr>
-                                                                                                    </tbody>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                                                            <tr>
-                                    <td style="font-weight: 700; color: var(--text-muted);">#CMD-2</td>
-                                    <td style="font-weight: 700;">
-                                        Fama Diouf                                        <div style="font-size:11px; color:var(--text-muted); font-weight:normal;">Tél : 781234567</div>
-                                    </td>
-                                    <td style="font-weight: 800; color: var(--accent);">44 000 F</td>
-                                    <td>
-                                                                                                                                    <span class="badge badge-warning">AVANCE (Credit)</span>
-                                                                                                                        </td>
-                                    <td>
-                                        <button class="btn-quick-action" onclick="toggleDetails('order-details-2')">Lignes</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" style="padding: 0; border: none;">
-                                        <div class="details-drawer" id="order-details-2">
-                                            <div style="font-weight: 700; font-size: 12px; color: var(--accent); margin-bottom: 8px;">Détails Facture :</div>
-                                            <table class="debt-table" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Produit</th>
-                                                        <th>Qté</th>
-                                                        <th>P.U.</th>
-                                                        <th>Sous-total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                                                                            <tr>
-                                                            <td>Bidon d&#039;huile 5L</td>
-                                                            <td>3</td>
-                                                            <td>8 000 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">24 000 F</td>
-                                                        </tr>
-                                                                                                            <tr>
-                                                            <td>Paquet de sucre 1kg</td>
-                                                            <td>13</td>
-                                                            <td>1 500 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">19 500 F</td>
-                                                        </tr>
-                                                                                                    </tbody>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                                                            <tr>
-                                    <td style="font-weight: 700; color: var(--text-muted);">#CMD-1</td>
-                                    <td style="font-weight: 700;">
-                                        Abdou Ndiaye                                        <div style="font-size:11px; color:var(--text-muted); font-weight:normal;">Tél : 776543210</div>
-                                    </td>
-                                    <td style="font-weight: 800; color: var(--accent);">58 000 F</td>
-                                    <td>
-                                                                                    <span class="badge badge-success">COMPTANT (Wave)</span>
-                                                                            </td>
-                                    <td>
-                                        <button class="btn-quick-action" onclick="toggleDetails('order-details-1')">Lignes</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" style="padding: 0; border: none;">
-                                        <div class="details-drawer" id="order-details-1">
-                                            <div style="font-weight: 700; font-size: 12px; color: var(--accent); margin-bottom: 8px;">Détails Facture :</div>
-                                            <table class="debt-table" style="font-size: 11px;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Produit</th>
-                                                        <th>Qté</th>
-                                                        <th>P.U.</th>
-                                                        <th>Sous-total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                                                                            <tr>
-                                                            <td>Sac de riz 50kg</td>
-                                                            <td>2</td>
-                                                            <td>25 000 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">50 000 F</td>
-                                                        </tr>
-                                                                                                            <tr>
-                                                            <td>Bidon d&#039;huile 5L</td>
-                                                            <td>1</td>
-                                                            <td>8 000 F</td>
-                                                            <td style="font-weight: 700; color: var(--accent);">8 000 F</td>
-                                                        </tr>
-                                                                                                    </tbody>
-                                            </table>
-                                        </div>
-                                    </td>
-                                </tr>
-                                                    </tbody>
+                            <?php endforeach; ?>
+                        </tbody>
                     </table>
                 </div>
             </div>

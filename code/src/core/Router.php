@@ -1,21 +1,16 @@
 <?php
 
-require_once dirname(__DIR__ ) . '/core/Database.php';
-require_once dirname(__DIR__ ). '/controller/PosController.php';
+require_once dirname(__DIR__) . '/controller/PosController.php';
 
 class Router
 {
-    /** @var array<string, array{controller: string, action: string}> */
     private array $routes = [
-        '/' => ['controller' => 'PosController', 'action' => 'afficherVue'],
+        '/' => ['controller' => 'PosController', 'action' => 'traiter'],
+        '/pos' => ['controller' => 'PosController', 'action' => 'traiter'],
     ];
 
-    private Database $database;
-
-    public function __construct(Database $database)
+    public function __construct()
     {
-        $this->database = $database;
-
         $this->dispatch();
     }
 
@@ -49,7 +44,7 @@ class Router
     private function creerControleur(string $controllerClass): object
     {
         return match ($controllerClass) {
-            'PosController' => new PosController($this->database),
+            'PosController' => new PosController(),
             default => new $controllerClass(),
         };
     }

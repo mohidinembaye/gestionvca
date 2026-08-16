@@ -5,47 +5,42 @@ require_once dirname(__DIR__) . '/entity/Produits.php';
 
 class ProduitRepository
 {
-    private Database $database;
-
-    public function __construct(Database $database)
-    {
-        $this->database = $database;
-    }
-
     public function getAllProduits(): array
     {
-        $lignes = $this->database->executeQuery(
-            "SELECT id, nom, prix_unitaire, stock_quantite FROM produits ORDER BY nom",
-            [],
-            false
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "SELECT id, nom, prix_unitaire, stock_quantite FROM produits ORDER BY nom"
         );
+        $statement->execute();
 
         $produits = [];
 
-        foreach ($lignes as $ligne) {
+        foreach ($statement->fetchAll() as $ligne) {
             $produits[] = $this->mapToProduit($ligne);
         }
 
         return $produits;
     }
 
-    public function getProduitById(int $id): ?Produits
+    public function getProduitById(int $id): ?Produit
     {
-        $ligne = $this->database->executeQuery(
-            "SELECT id, nom, prix_unitaire, stock_quantite FROM produits WHERE id = :id",
-            ['id' => $id]
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "SELECT id, nom, prix_unitaire, stock_quantite FROM produits WHERE id = :id"
         );
+        $statement->execute(['id' => $id]);
+        $ligne = $statement->fetch();
 
-        if ($ligne === []) {
+        if ($ligne === false) {
             return null;
         }
 
         return $this->mapToProduit($ligne);
     }
 
-    private function mapToProduit(array $ligne): Produits
+    private function mapToProduit(array $ligne): Produit
     {
-        return new Produits(
+        return new Produit(
             (int) $ligne['id'],
             $ligne['nom'],
             (float) $ligne['prix_unitaire'],

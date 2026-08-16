@@ -1,29 +1,21 @@
 <?php
 
 require_once dirname(__DIR__) . '/core/Database.php';
-require_once dirname(__DIR__) . '/entity/Fournisseur.php';
-
+require_once dirname(__DIR__) . '/entity/Fournisseurs.php';
 
 class FournisseurRepository
 {
-    private Database $database;
-
-    public function __construct(Database $database)
-    {
-        $this->database = $database;
-    }
-
     public function getAllFournisseurs(): array
     {
-        $lignes = $this->database->executeQuery(
-            "SELECT id, nom, telephone FROM fournisseurs ORDER BY nom",
-            [],
-            false
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "SELECT id, nom, telephone FROM fournisseurs ORDER BY nom"
         );
+        $statement->execute();
 
         $fournisseurs = [];
 
-        foreach ($lignes as $ligne) {
+        foreach ($statement->fetchAll() as $ligne) {
             $fournisseurs[] = $this->mapToFournisseur($ligne);
         }
 
@@ -32,12 +24,14 @@ class FournisseurRepository
 
     public function getFournisseurById(int $id): ?Fournisseur
     {
-        $ligne = $this->database->executeQuery(
-            "SELECT id, nom, telephone FROM fournisseurs WHERE id = :id",
-            ['id' => $id]
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "SELECT id, nom, telephone FROM fournisseurs WHERE id = :id"
         );
+        $statement->execute(['id' => $id]);
+        $ligne = $statement->fetch();
 
-        if ($ligne === []) {
+        if ($ligne === false) {
             return null;
         }
 
@@ -46,28 +40,29 @@ class FournisseurRepository
 
     public function creerFournisseur(string $nom, ?string $telephone = null): int
     {
-        $ligne = $this->database->executeQuery(
-            "INSERT INTO fournisseurs (nom, telephone) VALUES (:nom, :telephone) RETURNING id",
-            ['nom' => $nom, 'telephone' => $telephone]
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "INSERT INTO fournisseurs (nom, telephone) VALUES (:nom, :telephone) RETURNING id"
         );
+        $statement->execute(['nom' => $nom, 'telephone' => $telephone]);
 
-        return (int) $ligne['id'];
+        return (int) $statement->fetchColumn();
     }
 
     public function modifierFournisseur(int $id, string $nom, ?string $telephone = null): void
     {
-        $this->database->executeUpdate(
-            "UPDATE fournisseurs SET nom = :nom, telephone = :telephone WHERE id = :id",
-            ['id' => $id, 'nom' => $nom, 'telephone' => $telephone]
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare(
+            "UPDATE fournisseurs SET nom = :nom, telephone = :telephone WHERE id = :id"
         );
+        $statement->execute(['id' => $id, 'nom' => $nom, 'telephone' => $telephone]);
     }
 
     public function supprimerFournisseur(int $id): void
     {
-        $this->database->executeUpdate(
-            "DELETE FROM fournisseurs WHERE id = :id",
-            ['id' => $id]
-        );
+        $connexion = Database::getConnexion();
+        $statement = $connexion->prepare("DELETE FROM fournisseurs WHERE id = :id");
+        $statement->execute(['id' => $id]);
     }
 
     private function mapToFournisseur(array $ligne): Fournisseur

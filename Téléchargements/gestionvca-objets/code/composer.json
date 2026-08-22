@@ -1,0 +1,15 @@
+{
+    "name": "pape-mohidine-mbaye/code",
+    "autoload": {
+        "psr-4": {
+            "PapeMohidineMbaye\\Code\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "mohidinembaye",
+            "email": "mohidinembaye@gmail.com"
+        }
+    ],
+    "require": {}
+}
